@@ -1,42 +1,47 @@
 'use strict';
 
-const apiKey = 'bf4ad93afca94d0a8c4df0261f6de6cb';
-const searchURL = 'https://newsapi.org/v2/everything';
+const apiKey = 'KhhQuSRduhzdvAo748cyaPU9YA7ZxpwJWF3MMaF8';
+const searchURL = 'https://developer.nps.gov/api/v1/parks';
 
 function formatQueryParams(params){
   const queryItems = Object.keys(params)
-    .map(key => `${key}=${params[key]}`);
+    .map(key => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`);
   return queryItems.join('&');
 }
 
 function displayResults(responseJson, maxResults){
   $('#results-list').empty();
-  for(let i = 0; i< responseJson.articles.length & i<maxResults; i++){
+  for(let i = 0; i< responseJson.data.length & i<maxResults; i++){
     $('#results-list').append(
-      `<li><h3><a href="${responseJson.articles[i].url}">${responseJson.articles[i].title}</a></h3>
-      <p>${responseJson.articles[i].source.name}</p>
-      <p>By ${responseJson.articles[i].author}</p>
-      <p>${responseJson.articles[i].description}</p>
-      <img src='${responseJson.articles[i].urlToImage}'>
+      `<li><h3>${responseJson.data[i].fullName}</h3>
+      <p>${responseJson.data[i].addresses[0].line1}</p>
+      <p>${responseJson.data[i].addresses[0].line2}</p>
+      <p>${responseJson.data[i].addresses[0].city}, 
+      ${responseJson.data[i].addresses[0].stateCode} 
+      ${responseJson.data[i].addresses[0].postalCode}</p>
+      <p><a href="${responseJson.data[i].directionsInfo}">Directions</a>        <a href="${responseJson.data[i].url}">Go To Site</a></p>
+      <img src='${responseJson.data[i].images[0].url}' alt='picture of National Park - no image available'>
+      <p></p>
+      <p>${responseJson.data[i].description}</p>
       </li>`
     );}
   $('#results').removeClass('hidden');
 }
-function getNews(query, maxResults=10) {
+function getParks(query, maxResults) {
   const params = {
-    q: query,
-    language: 'en',
+    stateCode: query,
+    api_key: apiKey
   };
   const queryString = formatQueryParams(params);
   const url = searchURL + '?' + queryString;
   console.log(url);
 
-  const options = {
-    headers: new Headers({
-      "X-Api-Key": apiKey})
-  };
+  // const options = {
+  //   headers: new Headers({
+  //     "X-Api-Key": apiKey})
+  // };
 
-  fetch(url, options)
+  fetch(url)
     .then(response => { 
       if(response.ok){
         return response.json();
@@ -55,7 +60,7 @@ function watchForm(){
     event.preventDefault();
     const searchTerm = $('#js-search-term').val();
     const maxResults = $('#js-max-results').val();
-    getNews(searchTerm, maxResults);
+    getParks(searchTerm, maxResults);
   });
 }
 
